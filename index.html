@@ -37,7 +37,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0;
     }
 
     .btn img {
@@ -62,8 +61,8 @@
     }
 
     h1 {
-      font-size: 20px;
-      margin: 0 0 12px 0;
+      font-size: 22px;
+      margin: 0 0 14px 0;
     }
 
     .page {
@@ -74,19 +73,21 @@
       display: block;
     }
 
-    /* ===== TLタブ ===== */
+    /* ===== TLタブ（でかい版） ===== */
     .tl-tabs {
       display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
     .tl-tab {
-      padding: 6px 14px;
-      border-radius: 999px;
+      flex: 1;
+      padding: 14px 0;
+      border-radius: 16px;
       border: none;
       background: #f3e4e7;
-      font-size: 14px;
+      font-size: 16px;
+      font-weight: 600;
     }
 
     .tl-tab.active {
@@ -96,9 +97,9 @@
     /* ===== TL中身 ===== */
     .tl {
       display: none;
-      padding: 12px;
+      padding: 14px;
       background: #fafafa;
-      border-radius: 12px;
+      border-radius: 16px;
     }
 
     .tl.active {
@@ -124,7 +125,7 @@
     </button>
 
     <button class="btn" data-page="dm">
-      <img src="icons/mall.svg" alt="dm">
+      <img src="icons/mail.svg" alt="dm">
     </button>
 
     <button class="btn profile" data-page="profile">
