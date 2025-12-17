@@ -18,19 +18,19 @@
       position: fixed;
       left: 0;
       top: 0;
-      width: 64px;
+      width: 80px;
       height: 100vh;
       background: #deb4bb;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-top: 12px;
-      gap: 12px;
+      padding-top: 16px;
+      gap: 16px;
     }
 
     .btn {
-      width: 44px;
-      height: 44px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       background: transparent;
       border: none;
@@ -41,8 +41,8 @@
     }
 
     .btn img {
-      width: 22px;
-      height: 22px;
+      width: 26px;
+      height: 26px;
     }
 
     .btn.active {
@@ -50,14 +50,14 @@
     }
 
     .profile img {
-      width: 36px;
-      height: 36px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
     }
 
     /* ===== メイン ===== */
     main {
-      margin-left: 64px;
+      margin-left: 80px;
       padding: 16px;
     }
 
@@ -101,7 +101,7 @@
     </button>
   </aside>
 
-  <!-- ===== メイン画面 ===== -->
+  <!-- ===== メイン ===== -->
   <main>
     <section id="home" class="page active">
       <h1>ホーム</h1>
@@ -110,7 +110,7 @@
 
     <section id="search" class="page">
       <h1>検索</h1>
-      <p>ユーザー・投稿検索</p>
+      <p>ユーザー・投稿を検索</p>
     </section>
 
     <section id="notifications" class="page">
@@ -125,11 +125,11 @@
 
     <section id="profile" class="page">
       <h1>プロフィール</h1>
-      <p>Scratchアイコン連動</p>
+      <p>Scratchアイコン連動プロフィール</p>
     </section>
   </main>
 
-  <!-- ===== JS（画面切替） ===== -->
+  <!-- ===== JS ===== -->
   <script>
     const buttons = document.querySelectorAll(".btn");
     const pages = document.querySelectorAll(".page");
