@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mofury ログイン</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      background: #fdf6f7;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #333;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .mofurin {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .mofurin img {
+      width: 64px;
+      height: 64px;
+    }
+
+    .speech {
+      background: #f3e4e7;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      margin-top: 12px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 999px;
+      border: none;
+      background: #aacc9b;
+      font-weight: 600;
+    }
+
+    .code-box {
+      margin-top: 16px;
+      background: #fafafa;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      display: none;
+    }
+
+    .code {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      margin: 8px 0;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="logo">Mofury</div>
+
+    <div class="card">
+
+      <!-- もふりん -->
+      <div class="mofurin">
+        <img id="mofurin-img" src="characters/mofurin_hudan.png">
+        <div class="speech" id="speech">
+          Scratchのユーザー名を入力してね！
+        </div>
+      </div>
+
+      <!-- 入力 -->
+      <input id="username" placeholder="Scratchユーザー名">
+
+      <button onclick="startLogin()">確認する</button>
+
+      <!-- 認証コード -->
+      <div class="code-box" id="codeBox">
+        <p class="small">このコードをScratchのプロフィールにコメントしてね</p>
+        <div class="code" id="code">a1b2c3</div>
+
+        <button onclick="checkLogin()">確認できた？</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function startLogin() {
+      const username = document.getElementById("username").value;
+      if (!username) return;
+
+      document.getElementById("speech").innerText =
+        "このコードをプロフィールにコメントしてね！";
+
+      document.getElementById("mofurin-img").src =
+        "characters/mofurin_egao.png";
+
+      document.getElementById("codeBox").style.display = "block";
+    }
+
+    function checkLogin() {
+      document.getElementById("speech").innerText =
+        "確認中だよ…ちょっと待ってね";
+
+      setTimeout(() => {
+        document.getElementById("speech").innerText =
+          "確認できたよ！Mofuryへようこそ☁️";
+      }, 1500);
+    }
+  </script>
+
+</body>
+</html>
