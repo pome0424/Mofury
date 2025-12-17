@@ -5,6 +5,9 @@
   <title>Mofury ログイン</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     body {
       margin: 0;
@@ -27,7 +30,7 @@
     }
 
     .card {
-      background: #fff;
+      background: #ffffff;
       border-radius: 20px;
       padding: 20px;
     }
@@ -49,6 +52,7 @@
       border-radius: 16px;
       padding: 12px 14px;
       font-size: 14px;
+      line-height: 1.5;
     }
 
     input {
@@ -70,6 +74,7 @@
       border: none;
       background: #aacc9b;
       font-weight: 600;
+      cursor: pointer;
     }
 
     .code-box {
@@ -91,65 +96,108 @@
     .small {
       font-size: 12px;
       color: #666;
+      line-height: 1.4;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
-    <div class="logo">Mofury</div>
+<div class="container">
+  <div class="logo">Mofury</div>
 
-    <div class="card">
+  <div class="card">
 
-      <!-- もふりん -->
-      <div class="mofurin">
-        <img id="mofurin-img" src="characters/mofurin_hudan.png">
-        <div class="speech" id="speech">
-          Scratchのユーザー名を入力してね！
-        </div>
+    <!-- もふりん -->
+    <div class="mofurin">
+      <img id="mofurin-img" src="characters/mofurin_hudan.png" alt="もふりん">
+      <div class="speech" id="speech">
+        Scratchのユーザー名を入力してね！
       </div>
-
-      <!-- 入力 -->
-      <input id="username" placeholder="Scratchユーザー名">
-
-      <button onclick="startLogin()">確認する</button>
-
-      <!-- 認証コード -->
-      <div class="code-box" id="codeBox">
-        <p class="small">このコードをScratchのプロフィールにコメントしてね</p>
-        <div class="code" id="code">a1b2c3</div>
-
-        <button onclick="checkLogin()">確認できた？</button>
-      </div>
-
     </div>
+
+    <!-- 入力 -->
+    <input id="username" placeholder="Scratchユーザー名">
+
+    <button onclick="startLogin()">確認する</button>
+
+    <!-- 認証コード表示 -->
+    <div class="code-box" id="codeBox">
+      <p class="small">
+        このコードを Scratch のプロフィールにコメントしてね
+      </p>
+      <div class="code" id="code">xxxxxx</div>
+
+      <button onclick="checkLogin()">確認できた？</button>
+    </div>
+
   </div>
+</div>
 
-  <script>
-    function startLogin() {
-      const username = document.getElementById("username").value;
-      if (!username) return;
+<script>
+  /* ===== Supabase 設定 ===== */
+  const SUPABASE_URL = "https://ruyvyedvdzyedafehhoz.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1eXZ5ZWR2ZHp5ZWRhZmVoaG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjM1NDEsImV4cCI6MjA4MTQzOTU0MX0.tr4v3-bmIEyZ_DRMXSpxdx-7ZGAGc2GRcSJaXKuJFSs";
 
-      document.getElementById("speech").innerText =
-        "このコードをプロフィールにコメントしてね！";
+  const supabase = supabaseJs.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
-      document.getElementById("mofurin-img").src =
-        "characters/mofurin_egao.png";
+  /* ===== コード生成 ===== */
+  function generateCode() {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let code = "";
+    for (let i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+  }
 
-      document.getElementById("codeBox").style.display = "block";
+  /* ===== ログイン開始 ===== */
+  async function startLogin() {
+    const username = document.getElementById("username").value.trim();
+    if (!username) return;
+
+    const code = generateCode();
+
+    const { error } = await supabase
+      .from("login_codes")
+      .insert({
+        scratch_username: username,
+        code: code
+      });
+
+    if (error) {
+      alert("エラーが起きたよ…");
+      console.error(error);
+      return;
     }
 
-    function checkLogin() {
-      document.getElementById("speech").innerText =
-        "確認中だよ…ちょっと待ってね";
+    document.getElementById("speech").innerText =
+      "このコードをプロフィールにコメントしてね！";
 
-      setTimeout(() => {
-        document.getElementById("speech").innerText =
-          "確認できたよ！Mofuryへようこそ☁️";
-      }, 1500);
-    }
-  </script>
+    document.getElementById("mofurin-img").src =
+      "characters/mofurin_egao.png";
+
+    document.getElementById("code").innerText = code;
+    document.getElementById("codeBox").style.display = "block";
+  }
+
+  /* ===== 認証確認（今は仮） ===== */
+  function checkLogin() {
+    document.getElementById("speech").innerText =
+      "確認中だよ…ちょっと待ってね";
+
+    setTimeout(() => {
+      document.getElementById("speech").innerText =
+        "確認できたよ！Mofuryへようこそ☁️";
+
+      localStorage.setItem("mofury_login", "true");
+      location.href = "index.html";
+    }, 1500);
+  }
+</script>
 
 </body>
 </html>
