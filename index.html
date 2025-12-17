@@ -61,6 +61,11 @@
       padding: 16px;
     }
 
+    h1 {
+      font-size: 20px;
+      margin: 0 0 12px 0;
+    }
+
     .page {
       display: none;
     }
@@ -69,9 +74,35 @@
       display: block;
     }
 
-    h1 {
-      font-size: 20px;
-      margin-top: 0;
+    /* ===== TLタブ ===== */
+    .tl-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tl-tab {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: none;
+      background: #f3e4e7;
+      font-size: 14px;
+    }
+
+    .tl-tab.active {
+      background: #aacc9b;
+    }
+
+    /* ===== TL中身 ===== */
+    .tl {
+      display: none;
+      padding: 12px;
+      background: #fafafa;
+      border-radius: 12px;
+    }
+
+    .tl.active {
+      display: block;
     }
   </style>
 </head>
@@ -103,34 +134,59 @@
 
   <!-- ===== メイン ===== -->
   <main>
+
+    <!-- ホーム -->
     <section id="home" class="page active">
       <h1>ホーム</h1>
-      <p>全体TL / フォローTL / お知らせTL</p>
+
+      <div class="tl-tabs">
+        <button class="tl-tab active" data-tl="all">全体</button>
+        <button class="tl-tab" data-tl="follow">フォロー</button>
+        <button class="tl-tab" data-tl="info">お知らせ</button>
+      </div>
+
+      <div class="tl active" id="tl-all">
+        <p>全体TL</p>
+      </div>
+
+      <div class="tl" id="tl-follow">
+        <p>フォローTL</p>
+      </div>
+
+      <div class="tl" id="tl-info">
+        <p>こはるからのお知らせ</p>
+      </div>
     </section>
 
+    <!-- 検索 -->
     <section id="search" class="page">
       <h1>検索</h1>
       <p>ユーザー・投稿を検索</p>
     </section>
 
+    <!-- 通知 -->
     <section id="notifications" class="page">
       <h1>通知</h1>
-      <p>もふりんとこはるからのお知らせ</p>
+      <p>もふりんとこはるがあなたに何か伝えたいみたいです！</p>
     </section>
 
+    <!-- DM -->
     <section id="dm" class="page">
       <h1>DM</h1>
       <p>メッセージ一覧</p>
     </section>
 
+    <!-- プロフィール -->
     <section id="profile" class="page">
       <h1>プロフィール</h1>
-      <p>Scratchアイコン連動プロフィール</p>
+      <p>Scratch連動プロフィール</p>
     </section>
+
   </main>
 
   <!-- ===== JS ===== -->
   <script>
+    // サイドバー切替
     const buttons = document.querySelectorAll(".btn");
     const pages = document.querySelectorAll(".page");
 
@@ -143,6 +199,22 @@
 
         btn.classList.add("active");
         document.getElementById(page).classList.add("active");
+      });
+    });
+
+    // TL切替
+    const tlTabs = document.querySelectorAll(".tl-tab");
+    const tls = document.querySelectorAll(".tl");
+
+    tlTabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        const tl = tab.dataset.tl;
+
+        tlTabs.forEach(t => t.classList.remove("active"));
+        tls.forEach(c => c.classList.remove("active"));
+
+        tab.classList.add("active");
+        document.getElementById("tl-" + tl).classList.add("active");
       });
     });
   </script>
