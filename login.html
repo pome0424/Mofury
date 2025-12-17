@@ -5,9 +5,6 @@
   <title>Mofuryにログイン</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     body {
       margin: 0;
@@ -96,7 +93,6 @@
     .small {
       font-size: 12px;
       color: #666;
-      line-height: 1.4;
     }
   </style>
 </head>
@@ -121,30 +117,32 @@
 
     <button onclick="startLogin()">確認する</button>
 
-    <!-- 認証コード表示 -->
+    <!-- 認証コード -->
     <div class="code-box" id="codeBox">
       <p class="small">
         このコードを Scratch のプロフィールにコメントしてね
       </p>
       <div class="code" id="code">xxxxxx</div>
 
-      <button onclick="checkLogin()">確認できた？</button>
+      <button onclick="checkLogin()">コメントした！</button>
     </div>
 
   </div>
 </div>
 
 <script>
-  /* ===== Supabase 設定 ===== */
-  const SUPABASE_URL = "https://ruyvyedvdzyedafehhoz.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1eXZ5ZWR2ZHp5ZWRhZmVoaG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjM1NDEsImV4cCI6MjA4MTQzOTU0MX0.tr4v3-bmIEyZ_DRMXSpxdx-7ZGAGc2GRcSJaXKuJFSs";
+  /* =========================
+     ★ 設定（ここだけ変更）
+     ========================= */
 
-  const supabase = supabaseJs.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+  const SUPABASE_PROJECT_ID = "YOUR_PROJECT_ID"; 
+  const EDGE_FUNCTION_NAME = "scratch-login-check";
 
-  /* ===== コード生成 ===== */
+  /* ========================= */
+
+  const EDGE_URL =
+    `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/${EDGE_FUNCTION_NAME}`;
+
   function generateCode() {
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
     let code = "";
@@ -154,25 +152,13 @@
     return code;
   }
 
-  /* ===== ログイン開始 ===== */
-  async function startLogin() {
+  let currentCode = "";
+
+  function startLogin() {
     const username = document.getElementById("username").value.trim();
     if (!username) return;
 
-    const code = generateCode();
-
-    const { error } = await supabase
-      .from("login_codes")
-      .insert({
-        scratch_username: username,
-        code: code
-      });
-
-    if (error) {
-      alert("エラーが起きたよ…");
-      console.error(error);
-      return;
-    }
+    currentCode = generateCode();
 
     document.getElementById("speech").innerText =
       "このコードをプロフィールにコメントしてね！";
@@ -180,22 +166,42 @@
     document.getElementById("mofurin-img").src =
       "characters/mofurin_egao.png";
 
-    document.getElementById("code").innerText = code;
+    document.getElementById("code").innerText = currentCode;
     document.getElementById("codeBox").style.display = "block";
   }
 
-  /* ===== 認証確認（今は仮） ===== */
-  function checkLogin() {
+  async function checkLogin() {
+    const username = document.getElementById("username").value.trim();
+
     document.getElementById("speech").innerText =
-      "確認中だよ…ちょっと待ってね";
+      "確認中だよ…";
 
-    setTimeout(() => {
+    try {
+      const res = await fetch(EDGE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: username,
+          code: currentCode
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        document.getElementById("speech").innerText =
+          "確認できたよ！Mofuryへようこそ☁️";
+
+        localStorage.setItem("mofury_login", "true");
+        location.href = "index.html";
+      } else {
+        document.getElementById("speech").innerText =
+          "まだ確認できないみたい…もう一度確認してね";
+      }
+    } catch (e) {
       document.getElementById("speech").innerText =
-        "確認できたよ！Mofuryへようこそ☁️";
-
-      localStorage.setItem("mofury_login", "true");
-      location.href = "index.html";
-    }, 1500);
+        "通信エラーが起きたよ…";
+    }
   }
 </script>
 
