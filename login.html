@@ -1,209 +1,157 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mofuryにログイン</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Mofury ログイン</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      background: #fdf6f7;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #333;
-    }
-
-    .container {
-      max-width: 420px;
-      margin: 0 auto;
-      padding: 24px 16px;
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 24px;
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 20px;
-    }
-
-    .mofurin {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 16px;
-    }
-
-    .mofurin img {
-      width: 64px;
-      height: 64px;
-    }
-
-    .speech {
-      background: #f3e4e7;
-      border-radius: 16px;
-      padding: 12px 14px;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: 1px solid #ddd;
-      margin-top: 12px;
-      box-sizing: border-box;
-    }
-
-    button {
-      width: 100%;
-      margin-top: 16px;
-      padding: 14px;
-      font-size: 16px;
-      border-radius: 999px;
-      border: none;
-      background: #aacc9b;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .code-box {
-      margin-top: 16px;
-      background: #fafafa;
-      border-radius: 16px;
-      padding: 16px;
-      text-align: center;
-      display: none;
-    }
-
-    .code {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 4px;
-      margin: 8px 0;
-    }
-
-    .small {
-      font-size: 12px;
-      color: #666;
-    }
-  </style>
+<style>
+body{
+  margin:0;
+  background:#fdf6f7;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.container{
+  max-width:420px;
+  margin:auto;
+  padding:24px 16px;
+}
+.logo{
+  text-align:center;
+  font-size:28px;
+  font-weight:700;
+  margin-bottom:20px;
+}
+.card{
+  background:#fff;
+  border-radius:20px;
+  padding:20px;
+}
+.mofurin{
+  display:flex;
+  gap:12px;
+  margin-bottom:16px;
+}
+.mofurin img{
+  width:64px;
+  height:64px;
+}
+.speech{
+  background:#f3e4e7;
+  border-radius:16px;
+  padding:12px;
+  font-size:14px;
+}
+input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  font-size:16px;
+  margin-top:12px;
+}
+button{
+  width:100%;
+  margin-top:16px;
+  padding:14px;
+  border-radius:999px;
+  border:none;
+  background:#aacc9b;
+  font-size:16px;
+  font-weight:600;
+}
+.code-box{
+  display:none;
+  margin-top:16px;
+  background:#fafafa;
+  border-radius:16px;
+  padding:16px;
+  text-align:center;
+}
+.code{
+  font-size:24px;
+  letter-spacing:4px;
+  font-weight:700;
+}
+.small{
+  font-size:12px;
+  color:#666;
+}
+</style>
 </head>
 
 <body>
-
 <div class="container">
   <div class="logo">Mofury</div>
 
   <div class="card">
-
-    <!-- もふりん -->
     <div class="mofurin">
-      <img id="mofurin-img" src="characters/mofurin_hudan.png" alt="もふりん">
+      <img id="mofurinImg" src="characters/mofurin_hudan.png">
       <div class="speech" id="speech">
         Scratchのユーザー名を入力してね！
       </div>
     </div>
 
-    <!-- 入力 -->
     <input id="username" placeholder="Scratchユーザー名">
+    <button onclick="start()">確認する</button>
 
-    <button onclick="startLogin()">確認する</button>
-
-    <!-- 認証コード -->
     <div class="code-box" id="codeBox">
-      <p class="small">
-        このコードを Scratch のプロフィールにコメントしてね
-      </p>
-      <div class="code" id="code">xxxxxx</div>
-
-      <button onclick="checkLogin()">コメントした！</button>
+      <div class="small">このコードを Scratch のプロフィールにコメントしてね</div>
+      <div class="code" id="codeText"></div>
+      <button onclick="check()">コメントした！</button>
     </div>
-
   </div>
 </div>
 
 <script>
-  /* =========================
-     ★ 設定（ここだけ変更）
-     ========================= */
+const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+let code = "";
 
-  const SUPABASE_PROJECT_ID = "ruyvyedvdzyedafehhoz"; 
-  const EDGE_FUNCTION_NAME = "scratch-login-check";
-
-  /* ========================= */
-
-  const EDGE_URL =
-    `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/${EDGE_FUNCTION_NAME}`;
-
-  function generateCode() {
-    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return code;
+function genCode(){
+  code = "";
+  for(let i=0;i<6;i++){
+    code += chars[Math.floor(Math.random()*chars.length)];
   }
+  document.getElementById("codeText").innerText = code;
+}
 
-  let currentCode = "";
+function start(){
+  const u = document.getElementById("username").value.trim();
+  if(!u) return;
+  genCode();
+  document.getElementById("speech").innerText =
+    "このコードをプロフィールにコメントしてね！";
+  document.getElementById("mofurinImg").src =
+    "characters/mofurin_egao.png";
+  document.getElementById("codeBox").style.display = "block";
+}
 
-  function startLogin() {
-    const username = document.getElementById("username").value.trim();
-    if (!username) return;
+async function check(){
+  const u = document.getElementById("username").value.trim();
+  document.getElementById("speech").innerText = "確認中だよ…";
 
-    currentCode = generateCode();
+  try{
+    const res = await fetch(
+      `https://api.scratch.mit.edu/users/${u}/comments?limit=20`
+    );
+    const comments = await res.json();
 
-    document.getElementById("speech").innerText =
-      "このコードをプロフィールにコメントしてね！";
+    const ok = comments.some(c => c.content && c.content.includes(code));
 
-    document.getElementById("mofurin-img").src =
-      "characters/mofurin_egao.png";
-
-    document.getElementById("code").innerText = currentCode;
-    document.getElementById("codeBox").style.display = "block";
-  }
-
-  async function checkLogin() {
-    const username = document.getElementById("username").value.trim();
-
-    document.getElementById("speech").innerText =
-      "確認中だよ…";
-
-    try {
-      const res = await fetch(EDGE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: username,
-          code: currentCode
-        })
-      });
-
-      const data = await res.json();
-
-      if (data.ok) {
-        document.getElementById("speech").innerText =
-          "確認できたよ！Mofuryへようこそ☁️";
-
-        localStorage.setItem("mofury_login", "true");
-        location.href = "index.html";
-      } else {
-        document.getElementById("speech").innerText =
-          "まだ確認できないみたい…もう一度確認してね";
-      }
-    } catch (e) {
+    if(ok){
+      localStorage.setItem("mofury_user", u);
       document.getElementById("speech").innerText =
-        "通信エラーが起きたよ…";
+        "確認できたよ！Mofuryへようこそ☁️";
+      setTimeout(()=>location.href="index.html",1000);
+    }else{
+      document.getElementById("speech").innerText =
+        "まだ見つからないみたい…もう一度確認してね";
     }
+  }catch{
+    document.getElementById("speech").innerText =
+      "通信エラーが起きたよ…";
   }
+}
 </script>
-
 </body>
 </html>
