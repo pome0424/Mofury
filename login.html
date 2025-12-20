@@ -2,171 +2,94 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mofuryにログイン</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body {
-  margin: 0;
-  background: #fdf6f7;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.container {
-  max-width: 420px;
-  margin: auto;
-  padding: 24px 16px;
-}
-
-.logo {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 20px;
-}
-
-.card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 20px;
-}
-
-.mofurin {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.mofurin img {
-  width: 64px;
-  height: 64px;
-}
-
-.speech {
-  background: #f3e4e7;
-  border-radius: 16px;
-  padding: 12px;
-  font-size: 14px;
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  font-size: 16px;
-  margin-top: 12px;
-}
-
-button {
-  width: 100%;
-  margin-top: 16px;
-  padding: 14px;
-  border-radius: 999px;
-  border: none;
-  background: #aacc9b;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.code-box {
-  display: none;
-  margin-top: 16px;
-  background: #fafafa;
-  border-radius: 16px;
-  padding: 16px;
-  text-align: center;
-}
-
-.code {
-  font-size: 24px;
-  letter-spacing: 4px;
-  font-weight: 700;
-}
-
-.small {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 8px;
-}
+body{margin:0;background:#fdf6f7;font-family:sans-serif}
+.container{max-width:420px;margin:auto;padding:24px}
+.card{background:#fff;border-radius:20px;padding:20px}
+.mofurin{display:flex;gap:12px;margin-bottom:16px}
+.mofurin img{width:64px;height:64px}
+.speech{background:#f3e4e7;border-radius:16px;padding:12px;font-size:14px}
+input,button{width:100%;padding:12px;margin-top:12px}
+button{border:none;border-radius:999px;background:#aacc9b;font-weight:600}
+.code{font-size:24px;letter-spacing:4px;text-align:center}
 </style>
 </head>
 
 <body>
 <div class="container">
-  <div class="logo">Mofury</div>
-
   <div class="card">
     <div class="mofurin">
-      <img id="mofurinImg" src="characters/mofurin_hudan.png">
-      <div class="speech" id="speech">
-        Scratchのユーザー名を入力してね！
-      </div>
+      <img id="icon" src="characters/mofurin_hudan.png">
+      <div class="speech" id="speech">Scratchのユーザー名を入力してね！</div>
     </div>
 
-    <!-- STEP1 -->
     <input id="username" placeholder="Scratchユーザー名">
     <button onclick="getCode()">認証コードを取得</button>
 
-    <!-- STEP2 -->
-    <div class="code-box" id="codeBox">
-      <div class="small">
-        このコードをScratchの自分のプロフィールにコメントしてね
-      </div>
-      <div class="code" id="codeText"></div>
+    <div id="step2" style="display:none">
+      <p>このコードをScratchにコメントしてね</p>
+      <div class="code" id="code"></div>
+      <button onclick="verify()">コメントした！</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ===============================
-   ★ 自分のSupabase情報に変更
-   =============================== */
-const PROJECT_ID = "ruyvyedvdzyedafehhoz";
-const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1eXZ5ZWR2ZHp5ZWRhZmVoaG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjM1NDEsImV4cCI6MjA4MTQzOTU0MX0.tr4v3-bmIEyZ_DRMXSpxdx-7ZGAGc2GRcSJaXKuJFSs";
-/* =============================== */
+const PROJECT_ID = "YOUR_PROJECT_ID";
+const ANON_KEY = "YOUR_ANON_PUBLIC_KEY";
 
-async function getCode() {
+const supabase = window.supabase.createClient(
+  `https://${PROJECT_ID}.supabase.co`,
+  ANON_KEY
+);
+
+async function getCode(){
   const username = document.getElementById("username").value.trim();
-  if (!username) return;
-
-  document.getElementById("speech").innerText = "コードを発行中だよ…";
-
-  try {
-    const res = await fetch(
-      `https://${PROJECT_ID}.supabase.co/functions/v1/scratch-auth-handler`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${ANON_KEY}`
-        },
-        body: JSON.stringify({
-          type: "generateCode",
-          username: username
-        })
-      }
-    );
-
-    const data = await res.json();
-
-    if (!data.code) {
-      document.getElementById("speech").innerText =
-        "エラーが起きたみたい…";
-      return;
+  const res = await fetch(
+    `https://${PROJECT_ID}.supabase.co/functions/v1/scratch-auth-handler`,
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${ANON_KEY}`
+      },
+      body:JSON.stringify({type:"generateCode",username})
     }
+  );
+  const data = await res.json();
+  document.getElementById("code").innerText = data.code;
+  document.getElementById("step2").style.display = "block";
+  document.getElementById("icon").src="characters/mofurin_egao.png";
+  document.getElementById("speech").innerText="コメントしてから押してね！";
+}
 
-    document.getElementById("codeText").innerText = data.code;
-    document.getElementById("codeBox").style.display = "block";
-    document.getElementById("speech").innerText =
-      "このコードをコメントしてね！";
-    document.getElementById("mofurinImg").src =
-      "characters/mofurin_egao.png";
+async function verify(){
+  const username = document.getElementById("username").value.trim();
+  const code = document.getElementById("code").innerText;
 
-  } catch (e) {
-    document.getElementById("speech").innerText =
-      "通信エラーが起きたよ…";
-  }
+  const res = await fetch(
+    `https://${PROJECT_ID}.supabase.co/functions/v1/scratch-auth-handler`,
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${ANON_KEY}`
+      },
+      body:JSON.stringify({type:"verifyComment",username,code})
+    }
+  );
+
+  const data = await res.json();
+  await supabase.auth.setSession({
+    access_token:data.access_token,
+    refresh_token:data.refresh_token
+  });
+
+  location.href="index.html";
 }
 </script>
 </body>
