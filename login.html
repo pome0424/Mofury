@@ -9,52 +9,81 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
-  background:#deb4bb;
+  background:#fdf6f7; /* ← 白っぽく */
   font-family:sans-serif;
 }
+
 .container{
   max-width:420px;
   margin:0 auto;
   padding:24px;
 }
+
 .card{
-  background:#fff;
+  background:#ffffff;
   border-radius:24px;
   padding:24px;
 }
+
 .mofurin{
   display:flex;
   gap:12px;
   align-items:flex-start;
   margin-bottom:16px;
 }
+
 .mofurin img{
   width:64px;
   height:64px;
 }
+
 .speech{
   background:#f4e7ea;
   border-radius:16px;
   padding:12px;
   font-size:14px;
 }
-input,button{
+
+input{
   width:100%;
   padding:14px;
   margin-top:12px;
-  border-radius:999px;
-  border:none;
+  border-radius:16px;
+  border:1px solid #eee;
   font-size:14px;
 }
-input{
-  background:#fff;
-}
+
 button{
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+
+  border:none;
+  border-radius:20px;
+
   background:#aacc9b;
+  font-size:15px;
   font-weight:bold;
+
+  cursor:pointer;
+  pointer-events:auto;
+  position:relative;
+  z-index:10;
+
+  -webkit-appearance:none;
+  appearance:none;
 }
+
+button:active{
+  opacity:0.85;
+}
+
 .code{
   margin-top:12px;
   font-size:26px;
@@ -64,7 +93,15 @@ button{
   border-radius:16px;
   padding:12px;
 }
-.hidden{display:none}
+
+.hidden{
+  display:none;
+}
+
+#error{
+  color:#c00;
+  margin-top:12px;
+}
 </style>
 </head>
 
@@ -82,32 +119,30 @@ button{
     <!-- STEP 1 -->
     <div id="step1">
       <input id="username" placeholder="Scratchユーザー名">
-      <button onclick="getCode()">認証コードを取得</button>
+      <button type="button" onclick="getCode()">認証コードを取得</button>
     </div>
 
     <!-- STEP 2 -->
     <div id="step2" class="hidden">
-      <p>このコードをScratchの自分のプロフィールコメント欄に貼ってね</p>
+      <p>このコードをScratchのコメントに貼ってね</p>
       <div class="code" id="code"></div>
-      <button onclick="verify()">コメントした！</button>
+      <button type="button" onclick="verify()">コメントした！</button>
     </div>
 
-    <p id="error" style="color:#c00;margin-top:12px"></p>
+    <p id="error"></p>
 
   </div>
 </div>
 
 <script>
-/* ===== 自分のSupabase ===== */
-const PROJECT_ID = "ruyvyedvdzyedafehhoz";
-const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1eXZ5ZWR2ZHp5ZWRhZmVoaG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjM1NDEsImV4cCI6MjA4MTQzOTU0MX0.tr4v3-bmIEyZ_DRMXSpxdx-7ZGAGc2GRcSJaXKuJFSs";
+const PROJECT_ID = "YOUR_PROJECT_ID";
+const ANON_KEY = "YOUR_ANON_PUBLIC_KEY";
 
 const supabase = window.supabase.createClient(
   `https://${PROJECT_ID}.supabase.co`,
   ANON_KEY
 );
 
-/* ===== 認証コード取得 ===== */
 async function getCode(){
   const username = document.getElementById("username").value.trim();
   if(!username) return;
@@ -123,10 +158,7 @@ async function getCode(){
           "Content-Type":"application/json",
           "Authorization":`Bearer ${ANON_KEY}`
         },
-        body:JSON.stringify({
-          type:"generateCode",
-          username
-        })
+        body:JSON.stringify({ type:"generateCode", username })
       }
     );
 
@@ -135,6 +167,7 @@ async function getCode(){
 
     document.getElementById("code").innerText = data.code;
     document.getElementById("step2").classList.remove("hidden");
+
     document.getElementById("icon").src="characters/mofurin_egao.png";
     document.getElementById("speech").innerText="コメントしたら押してね！";
 
@@ -143,7 +176,6 @@ async function getCode(){
   }
 }
 
-/* ===== コメント確認 & ログイン ===== */
 async function verify(){
   const username = document.getElementById("username").value.trim();
   const code = document.getElementById("code").innerText;
@@ -157,11 +189,7 @@ async function verify(){
           "Content-Type":"application/json",
           "Authorization":`Bearer ${ANON_KEY}`
         },
-        body:JSON.stringify({
-          type:"verifyComment",
-          username,
-          code
-        })
+        body:JSON.stringify({ type:"verifyComment", username, code })
       }
     );
 
@@ -173,7 +201,7 @@ async function verify(){
       refresh_token:data.refresh_token
     });
 
-    location.href = "index.html";
+    location.href="index.html";
 
   }catch(e){
     document.getElementById("error").innerText = e.message;
