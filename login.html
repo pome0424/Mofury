@@ -9,13 +9,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{ box-sizing:border-box; }
 
 body{
   margin:0;
-  background:#fdf6f7; /* ← 白っぽく */
+  background:#fdf6f7; /* 白っぽい背景 */
   font-family:sans-serif;
 }
 
@@ -63,26 +61,20 @@ button{
   width:100%;
   padding:14px;
   margin-top:12px;
-
   border:none;
   border-radius:20px;
-
   background:#aacc9b;
   font-size:15px;
   font-weight:bold;
-
   cursor:pointer;
   pointer-events:auto;
   position:relative;
-  z-index:10;
-
+  z-index:5;
   -webkit-appearance:none;
   appearance:none;
 }
 
-button:active{
-  opacity:0.85;
-}
+button:active{ opacity:0.85; }
 
 .code{
   margin-top:12px;
@@ -94,13 +86,12 @@ button:active{
   padding:12px;
 }
 
-.hidden{
-  display:none;
-}
+.hidden{ display:none; }
 
 #error{
   color:#c00;
   margin-top:12px;
+  font-size:14px;
 }
 </style>
 </head>
@@ -110,7 +101,7 @@ button:active{
   <div class="card">
 
     <div class="mofurin">
-      <img id="icon" src="characters/mofurin_hudan.png">
+      <img id="icon" src="characters/mofurin_hudan.png" alt="もふりん">
       <div class="speech" id="speech">
         Scratchのユーザー名を入力してね！
       </div>
@@ -119,14 +110,14 @@ button:active{
     <!-- STEP 1 -->
     <div id="step1">
       <input id="username" placeholder="Scratchユーザー名">
-      <button type="button" onclick="getCode()">認証コードを取得</button>
+      <button type="button" id="getCodeBtn">認証コードを取得</button>
     </div>
 
     <!-- STEP 2 -->
     <div id="step2" class="hidden">
       <p>このコードをScratchのコメントに貼ってね</p>
       <div class="code" id="code"></div>
-      <button type="button" onclick="verify()">コメントした！</button>
+      <button type="button" id="verifyBtn">コメントした！</button>
     </div>
 
     <p id="error"></p>
@@ -135,78 +126,112 @@ button:active{
 </div>
 
 <script>
-const PROJECT_ID = "ruyvyedvdzyedafehhoz";
-const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1eXZ5ZWR2ZHp5ZWRhZmVoaG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjM1NDEsImV4cCI6MjA4MTQzOTU0MX0.tr4v3-bmIEyZ_DRMXSpxdx-7ZGAGc2GRcSJaXKuJFSs";
+/* =====================
+   設定（必ず自分のに）
+   ===================== */
+const PROJECT_ID = "YOUR_PROJECT_ID";        // https://XXXX.supabase.co の XXXX
+const ANON_KEY  = "YOUR_ANON_PUBLIC_KEY";    // anon public key
 
 const supabase = window.supabase.createClient(
   `https://${PROJECT_ID}.supabase.co`,
   ANON_KEY
 );
 
-async function getCode(){
-  const username = document.getElementById("username").value.trim();
-  if(!username) return;
+/* DOM */
+const usernameInput = document.getElementById("username");
+const step2 = document.getElementById("step2");
+const codeBox = document.getElementById("code");
+const errorBox = document.getElementById("error");
+const icon = document.getElementById("icon");
+const speech = document.getElementById("speech");
 
-  document.getElementById("error").innerText = "";
+/* =====================
+   認証コード取得
+   ===================== */
+document.getElementById("getCodeBtn").addEventListener("click", async () => {
+  const username = usernameInput.value.trim();
+  if(!username){
+    errorBox.innerText = "ユーザー名を入力してね";
+    return;
+  }
+
+  errorBox.innerText = "";
 
   try{
     const res = await fetch(
       `https://${PROJECT_ID}.supabase.co/functions/v1/scratch-auth-handler`,
       {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":`Bearer ${ANON_KEY}`
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${ANON_KEY}`
         },
-        body:JSON.stringify({ type:"generateCode", username })
+        body: JSON.stringify({
+          type: "generateCode",
+          username
+        })
       }
     );
 
     const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "通信エラー");
+    if(!res.ok || !data.code){
+      throw new Error(data.error || "認証コード取得に失敗しました");
+    }
 
-    document.getElementById("code").innerText = data.code;
-    document.getElementById("step2").classList.remove("hidden");
+    codeBox.innerText = data.code;
+    step2.classList.remove("hidden");
 
-    document.getElementById("icon").src="characters/mofurin_egao.png";
-    document.getElementById("speech").innerText="コメントしたら押してね！";
+    icon.src = "characters/mofurin_egao.png";
+    speech.innerText = "コメントしたら押してね！";
 
   }catch(e){
-    document.getElementById("error").innerText = e.message;
+    errorBox.innerText = e.message;
   }
-}
+});
 
-async function verify(){
-  const username = document.getElementById("username").value.trim();
-  const code = document.getElementById("code").innerText;
+/* =====================
+   コメント確認 → ログイン
+   ===================== */
+document.getElementById("verifyBtn").addEventListener("click", async () => {
+  const username = usernameInput.value.trim();
+  const code = codeBox.innerText;
+
+  errorBox.innerText = "";
 
   try{
     const res = await fetch(
       `https://${PROJECT_ID}.supabase.co/functions/v1/scratch-auth-handler`,
       {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":`Bearer ${ANON_KEY}`
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${ANON_KEY}`
         },
-        body:JSON.stringify({ type:"verifyComment", username, code })
+        body: JSON.stringify({
+          type: "verifyComment",
+          username,
+          code
+        })
       }
     );
 
     const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "認証失敗");
+    if(!res.ok || !data.access_token){
+      throw new Error(data.error || "認証に失敗しました");
+    }
 
     await supabase.auth.setSession({
-      access_token:data.access_token,
-      refresh_token:data.refresh_token
+      access_token: data.access_token,
+      refresh_token: data.refresh_token
     });
 
-    location.href="index.html";
+    /* 成功 → ホームへ */
+    window.location.href = "index.html";
 
   }catch(e){
-    document.getElementById("error").innerText = e.message;
+    errorBox.innerText = e.message;
   }
-}
+});
 </script>
 </body>
 </html>
