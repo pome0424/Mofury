@@ -126,111 +126,113 @@ button:active{ opacity:0.85; }
 </div>
 
 <script>
-/* =====================
-   設定（必ず自分のに）
-   ===================== */
-const PROJECT_ID = "ruyvyedvdzyedafehhoz";        // https://XXXX.supabase.co の XXXX
-const ANON_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1eXZ5ZWR2ZHp5ZWRhZmVoaG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjM1NDEsImV4cCI6MjA4MTQzOTU0MX0.tr4v3-bmIEyZ_DRMXSpxdx-7ZGAGc2GRcSJaXKuJFSs";    // anon public key
-
-const supabase = window.supabase.createClient(
-  `https://ruyvyedvdzyedafehhoz.supabase.co`,
-  ANON_KEY
-);
-
-/* DOM */
-const usernameInput = document.getElementById("username");
-const step2 = document.getElementById("step2");
-const codeBox = document.getElementById("code");
-const errorBox = document.getElementById("error");
-const icon = document.getElementById("icon");
-const speech = document.getElementById("speech");
-
-/* =====================
-   認証コード取得
-   ===================== */
-document.getElementById("getCodeBtn").addEventListener("click", async () => {
-  const username = usernameInput.value.trim();
-  if(!username){
-    errorBox.innerText = "ユーザー名を入力してね";
-    return;
-  }
-
-  errorBox.innerText = "";
-
-  try{
-    const res = await fetch(
-      `https://ruyvyedvdzyedafehhoz.supabase.co/functions/v1/scratch-auth-handler`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${ANON_KEY}`
-        },
-        body: JSON.stringify({
-          type: "generateCode",
-          username
-        })
-      }
-    );
-
-    const data = await res.json();
-    if(!res.ok || !data.code){
-      throw new Error(data.error || "認証コード取得に失敗しました");
+document.addEventListener('DOMContentLoaded', () => {
+  /* =====================
+     設定（必ず自分のに）
+     ===================== */
+  const PROJECT_ID = "ruyvyedvdzyedafehhoz";        // https://XXXX.supabase.co の XXXX
+  const ANON_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1eXZ5ZWR2ZHp5ZWRhZmVoaG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjM1NDEsImV4cCI6MjA4MTQzOTU0MX0.tr4v3-bmIEyZ_DRMXSpxdx-7ZGAGc2GRcSJaXKuJFSs";    // anon public key
+  
+  const supabase = window.supabase.createClient(
+    `https://${PROJECT_ID}.supabase.co`,
+    ANON_KEY
+  );
+  
+  /* DOM */
+  const usernameInput = document.getElementById("username");
+  const step2 = document.getElementById("step2");
+  const codeBox = document.getElementById("code");
+  const errorBox = document.getElementById("error");
+  const icon = document.getElementById("icon");
+  const speech = document.getElementById("speech");
+  
+  /* =====================
+     認証コード取得
+     ===================== */
+  document.getElementById("getCodeBtn").addEventListener("click", async () => {
+    const username = usernameInput.value.trim();
+    if(!username){
+      errorBox.innerText = "ユーザー名を入力してね";
+      return;
     }
-
-    codeBox.innerText = data.code;
-    step2.classList.remove("hidden");
-
-    icon.src = "characters/mofurin_egao.png";
-    speech.innerText = "コメントしたら押してね！";
-
-  }catch(e){
-    errorBox.innerText = e.message;
-  }
-});
-
-/* =====================
-   コメント確認 → ログイン
-   ===================== */
-document.getElementById("verifyBtn").addEventListener("click", async () => {
-  const username = usernameInput.value.trim();
-  const code = codeBox.innerText;
-
-  errorBox.innerText = "";
-
-  try{
-    const res = await fetch(
-      `https://ruyvyedvdzyedafehhoz.supabase.co/functions/v1/scratch-auth-handler`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${ANON_KEY}`
-        },
-        body: JSON.stringify({
-          type: "verifyComment",
-          username,
-          code
-        })
+  
+    errorBox.innerText = "";
+  
+    try{
+      const res = await fetch(
+        `https://${PROJECT_ID}.supabase.co/functions/v1/scratch-auth-handler`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${ANON_KEY}`
+          },
+          body: JSON.stringify({
+            type: "generateCode",
+            username
+          })
+        }
+      );
+  
+      const data = await res.json();
+      if(!res.ok || !data.code){
+        throw new Error(data.error || "認証コード取得に失敗しました");
       }
-    );
-
-    const data = await res.json();
-    if(!res.ok || !data.access_token){
-      throw new Error(data.error || "認証に失敗しました");
+  
+      codeBox.innerText = data.code;
+      step2.classList.remove("hidden");
+  
+      icon.src = "characters/mofurin_egao.png";
+      speech.innerText = "コメントしたら押してね！";
+  
+    }catch(e){
+      errorBox.innerText = e.message;
     }
-
-    await supabase.auth.setSession({
-      access_token: data.access_token,
-      refresh_token: data.refresh_token
-    });
-
-    /* 成功 → ホームへ */
-    window.location.href = "index.html";
-
-  }catch(e){
-    errorBox.innerText = e.message;
-  }
+  });
+  
+  /* =====================
+     コメント確認 → ログイン
+     ===================== */
+  document.getElementById("verifyBtn").addEventListener("click", async () => {
+    const username = usernameInput.value.trim();
+    const code = codeBox.innerText;
+  
+    errorBox.innerText = "";
+  
+    try{
+      const res = await fetch(
+        `https://${PROJECT_ID}.supabase.co/functions/v1/scratch-auth-handler`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${ANON_KEY}`
+          },
+          body: JSON.stringify({
+            type: "verifyComment",
+            username,
+            code
+          })
+        }
+      );
+  
+      const data = await res.json();
+      if(!res.ok || !data.access_token){
+        throw new Error(data.error || "認証に失敗しました");
+      }
+  
+      await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token
+      });
+  
+      /* 成功 → ホームへ */
+      window.location.href = "index.html";
+  
+    }catch(e){
+      errorBox.innerText = e.message;
+    }
+  });
 });
 </script>
 </body>
