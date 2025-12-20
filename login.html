@@ -133,7 +133,7 @@ const PROJECT_ID = "ruyvyedvdzyedafehhoz";        // https://XXXX.supabase.co ã
 const ANON_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1eXZ5ZWR2ZHp5ZWRhZmVoaG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjM1NDEsImV4cCI6MjA4MTQzOTU0MX0.tr4v3-bmIEyZ_DRMXSpxdx-7ZGAGc2GRcSJaXKuJFSs";    // anon public key
 
 const supabase = window.supabase.createClient(
-  `https://${PROJECT_ID}.supabase.co`,
+  `https://ruyvyedvdzyedafehhoz.supabase.co`,
   ANON_KEY
 );
 
@@ -200,7 +200,7 @@ document.getElementById("verifyBtn").addEventListener("click", async () => {
 
   try{
     const res = await fetch(
-      `https://${PROJECT_ID}.supabase.co/functions/v1/scratch-auth-handler`,
+      `https://ruyvyedvdzyedafehhoz.supabase.co/functions/v1/scratch-auth-handler`,
       {
         method: "POST",
         headers: {
